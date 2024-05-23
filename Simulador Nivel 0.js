@@ -1,44 +1,21 @@
-var readline = require('readline');
-
-var produto00 = {
-    nome: '001 - Computador Desktop Intel Core i5',
-    valor: 3199.00,
-    estoque: 5
-};
-var produto01 = {
-    nome: '002 - Laptop Ultrabook Intel Core i7',
-    valor: 4799.00,
-    estoque: 5
-};
-var produto02 = {
-    nome: '003 - Monitor LED 24 polegadas Full HD',
-    valor: 799.90,
-    estoque: 5
-};
-var produto03 = {
-    nome: '004 - Teclado Mecânico Gamer RGB',
-    valor: 299.00,
-    estoque: 5
-};
-var produto04 = {
-    nome: '005 - Mouse Óptico Sem Fio',
-    valor: 79.90,
-    estoque: 5
-};
-var produtos = [produto00, produto01, produto02, produto03, produto04];
-var vendas = [];
 var numeroNotaFiscal = 0;
 
-var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+var produtos = [
+    { nome: '001 - Computador Desktop Intel Core i5', valor: 3199.00, estoque: 5 },
+    { nome: '002 - Laptop Ultrabook Intel Core i7', valor: 4799.00, estoque: 5 },
+    { nome: '003 - Monitor LED 24 polegadas Full HD', valor: 799.90, estoque: 5 },
+    { nome: '004 - Teclado Mecânico Gamer RGB', valor: 299.00, estoque: 5 },
+    { nome: '005 - Mouse Óptico Sem Fio', valor: 79.90, estoque: 5 }
+];
+
+var vendas = [];
 
 function visualizarProdutos() {
-    console.log('Produtos disponíveis:');
+    var produtosList = 'Produtos disponíveis:\n';
     produtos.forEach(function(produto, index) {
-        console.log(`${index + 1}) ${produto.nome} - R$ ${produto.valor.toFixed(2)} - Estoque: ${produto.estoque}`);
+        produtosList += `${index + 1}) ${produto.nome} - R$ ${produto.valor.toFixed(2)} - Estoque: ${produto.estoque}\n`;
     });
+    return produtosList;
 }
 
 function imprimirNotaFiscal() {
@@ -75,73 +52,83 @@ function iniciarNovaVenda() {
 }
 
 function menu() {
-    console.log('\nSelecione uma opção:');
-    console.log('1) Visualizar produtos cadastrados');
-    console.log('2) Lançar venda de produto');
-    console.log('3) Imprimir nota fiscal');
-    console.log('4) Iniciar uma nova venda');
-    console.log('5) Sair');
-    rl.question('Escolha uma opção: ', function(escolha) {
-        escolha = parseInt(escolha);
-        switch (escolha) {
-            case 1:
-                visualizarProdutos();
-                menu();
-                break;
-            case 2:
-                rl.question('Selecione o número do produto que deseja vender: ', function(escolhaProduto) {
-                    escolhaProduto = parseInt(escolhaProduto);
-                    if (!isNaN(escolhaProduto) && escolhaProduto >= 1 && escolhaProduto <= produtos.length) {
-                        var produtoSelecionado = produtos[escolhaProduto - 1];
-                        rl.question(`Digite a quantidade que deseja vender (Disponível: ${produtoSelecionado.estoque}): `, function(quantidadeVenda) {
-                            quantidadeVenda = parseInt(quantidadeVenda);
-                            if (quantidadeVenda > 0 && quantidadeVenda <= produtoSelecionado.estoque) {
-                                var venda = {
-                                    produto: produtoSelecionado.nome,
-                                    quantidade: quantidadeVenda,
-                                    precoUnitario: produtoSelecionado.valor,
-                                    precoTotal: produtoSelecionado.valor * quantidadeVenda
-                                };
+    var escolha = parseInt(prompt(
+        'Selecione uma opção:\n' +
+        '1) Visualizar produtos cadastrados e lançar venda\n' +
+        '2) Lançar venda de produto\n' +
+        '3) Imprimir nota fiscal\n' +
+        '4) Iniciar uma nova venda\n' +
+        '5) Sair'
+    ));
 
-                                produtoSelecionado.estoque -= quantidadeVenda;
-                                vendas.push(venda);
+    switch (escolha) {
+        case 1:
+            var produtosList = visualizarProdutos();
+            var escolhaProduto = parseInt(prompt(produtosList + 'Selecione o número do produto que deseja vender:'));
+            if (!isNaN(escolhaProduto) && escolhaProduto >= 1 && escolhaProduto <= produtos.length) {
+                var produtoSelecionado = produtos[escolhaProduto - 1];
+                var quantidadeVenda = parseInt(prompt(`Digite a quantidade que deseja vender (Disponível: ${produtoSelecionado.estoque}):`));
+                if (quantidadeVenda > 0 && quantidadeVenda <= produtoSelecionado.estoque) {
+                    var venda = {
+                        produto: produtoSelecionado.nome,
+                        quantidade: quantidadeVenda,
+                        precoUnitario: produtoSelecionado.valor
+                    };
 
-                                console.log(`Venda lançada: ${quantidadeVenda}x ${produtoSelecionado.nome} - Total: R$ ${(produtoSelecionado.valor * quantidadeVenda).toFixed(2)}`);
-                                console.log('Produto adicionado com sucesso!');
-                                menu();
-                            } else {
-                                console.log('Quantidade inválida ou fora de estoque!');
-                                menu();
-                            }
-                        });
-                    } else {
-                        console.log('Opção de produto inválida!');
-                        menu();
-                    }
-                });
-                break;
-            case 3:
-                if (vendas.length > 0) {
-                    imprimirNotaFiscal();
+                    produtoSelecionado.estoque -= quantidadeVenda;
+                    vendas.push(venda);
+
+                    console.log(`Venda lançada: ${quantidadeVenda}x ${produtoSelecionado.nome} - Total: R$ ${(produtoSelecionado.valor * quantidadeVenda).toFixed(2)}`);
+                    console.log('Produto adicionado com sucesso!');
                 } else {
-                    console.log('Não há vendas para imprimir nota fiscal.');
+                    console.log('Quantidade inválida ou fora de estoque!');
                 }
-                menu();
-                break;
-            case 4:
-                iniciarNovaVenda();
-                menu();
-                break;
-            case 5:
-                console.log('Saindo...');
-                rl.close();
-                break;
-            default:
-                console.log('Opção inválida! Por favor, selecione uma opção válida.');
-                menu();
-                break;
-        }
-    });
+            } else {
+                console.log('Opção de produto inválida!');
+            }
+            break;
+        case 2:
+            var escolhaProduto = parseInt(prompt('Selecione o número do produto que deseja vender:'));
+            if (!isNaN(escolhaProduto) && escolhaProduto >= 1 && escolhaProduto <= produtos.length) {
+                var produtoSelecionado = produtos[escolhaProduto - 1];
+                var quantidadeVenda = parseInt(prompt(`Digite a quantidade que deseja vender (Disponível: ${produtoSelecionado.estoque}):`));
+                if (quantidadeVenda > 0 && quantidadeVenda <= produtoSelecionado.estoque) {
+                    var venda = {
+                        produto: produtoSelecionado.nome,
+                        quantidade: quantidadeVenda,
+                        precoUnitario: produtoSelecionado.valor
+                    };
+
+                    produtoSelecionado.estoque -= quantidadeVenda;
+                    vendas.push(venda);
+
+                    console.log(`Venda lançada: ${quantidadeVenda}x ${produtoSelecionado.nome} - Total: R$ ${(produtoSelecionado.valor * quantidadeVenda).toFixed(2)}`);
+                    console.log('Produto adicionado com sucesso!');
+                } else {
+                    console.log('Quantidade inválida ou fora de estoque!');
+                }
+            } else {
+                console.log('Opção de produto inválida!');
+            }
+            break;
+        case 3:
+            if (vendas.length > 0) {
+                imprimirNotaFiscal();
+            } else {
+                console.log('Não há vendas para imprimir nota fiscal.');
+            }
+            break;
+        case 4:
+            iniciarNovaVenda();
+            break;
+        case 5:
+            console.log('Saindo...');
+            return;
+        default:
+            console.log('Opção inválida! Por favor, selecione uma opção válida.');
+            break;
+    }
+    menu();
 }
 
 menu();
